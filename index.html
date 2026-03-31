@@ -449,7 +449,12 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     if (!running) {
-      if (totalSeconds <= 0) return; 
+      if (totalSeconds <= 0) {
+        // Acknowledge the alarm if "DONE" is clicked
+        clearInterval(beepInterval);
+        rockScroller.classList.remove('active');
+        return; 
+      } 
       running = true;
       btnStart.classList.add('running');
       startIcon.innerHTML = '&#10074;&#10074;';
