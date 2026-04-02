@@ -43,7 +43,10 @@ header{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:
 .btn-wide { width: 100%; background: var(--accent); border: none; color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 15px; border-radius: 6px; cursor: pointer; transition: opacity 0.15s; margin-top: 10px; }
 .btn-wide:active { opacity: 0.8; }
 
-.display-area{margin-bottom:20px;}
+/* MAIN LAYOUT WRAPPER */
+.main-layout { display: flex; flex-direction: column; width: 100%; }
+
+.display-area{margin-bottom:20px; flex: 1;}
 .panel-view{background:#1a2e42;border:1px solid rgba(255,255,255,0.15);border-top:2px solid #3a9bd5;border-radius:10px;padding:28px 16px;text-align:center;}
 
 /* CUSTOM SETUP STYLES */
@@ -71,11 +74,12 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 .time-display.expired{color:var(--red);}
 .time-label{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:12px;letter-spacing:3px;color:#8aabb8;text-transform:uppercase;margin-top:12px;}
 
-/* ACTIVE TIMER STYLES - ANALOG - DEFAULT (PORTRAIT) */
+/* ACTIVE TIMER STYLES - ANALOG */
 #analog-view{display:none;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center; width: 100%;}
 #analog-view.visible{display:-webkit-flex;display:flex;}
-.watch-container{position:relative;width:min(280px,70vw);height:min(280px,70vw);margin:0 auto;}
-#watch-canvas{width:100%;height:100%;border-radius:50%;}
+/* Flex center ensures the canvas stays middle even if container grows */
+.watch-container{position:relative;width:min(280px,70vw);height:min(280px,70vw);margin:0 auto; display: flex; align-items: center; justify-content: center;}
+#watch-canvas{border-radius:50%;}
 .analog-details-container { text-align: center; margin-top: 14px; }
 .analog-digital{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:1.6rem;font-weight:700;color:#8aabb8;letter-spacing:0.08em;}
 
@@ -123,39 +127,52 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 
 /* LANDSCAPE SPECIFIC STYLES */
 @media (orientation: landscape) {
-  .app { max-width: none; padding-bottom: 20px; } /* Remove width constraint and reduce bottom padding */
-  header { padding-bottom: 8px; margin-bottom: 12px; } /* Slim down header */
-  .display-area { margin-bottom: 0; }
-  .panel-view { padding: 15px; }
+  .app { max-width: none; padding-bottom: 20px; }
+  header { padding-bottom: 8px; margin-bottom: 12px; }
+  .main-layout { flex-direction: row; align-items: stretch; gap: 20px; }
+  .display-area { margin-bottom: 0; flex: 1; }
+  .panel-view { padding: 15px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
 
-  /* Redefine Analog View for Landscape */
-  #analog-view {
-    flex-direction: row;
-    justify-content: space-around;
+  /* SETUP VIEW REFLOW FOR LANDSCAPE */
+  .setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 12px 30px;
     align-items: center;
+    width: 100%;
   }
+  .setup-group { margin-bottom: 0; }
+  .duration-group { grid-column: 1 / 2; grid-row: 1 / 4; }
+  .policy-group { grid-column: 2 / 3; grid-row: 1 / 2; }
+  .alert-group { grid-column: 2 / 3; grid-row: 2 / 3; }
+  .btn-group { grid-column: 2 / 3; grid-row: 3 / 4; }
+  
+  /* Tighten up setup forms for vertical space */
+  .setup-group label { margin-bottom: 4px; font-size: 13px; }
+  .picker-btn { height: 34px; font-size: 16px; }
+  .picker-val { font-size: 34px; margin: 4px 0; }
+  .time-colon { padding-top: 34px; font-size: 34px; }
+  .app-select { padding: 10px; font-size: 14px; }
+  .btn-wide { padding: 12px; font-size: 16px; margin-top: 5px !important; }
 
-  /* Make the clock fill vertical space and cap it */
+  /* Analog View for Landscape */
+  #analog-view { flex-direction: row; justify-content: space-around; align-items: center; gap: 2vw;}
+
   .watch-container {
-    width: auto;
-    height: calc(100vh - 120px); /* Approximate: viewport height minus header and controls */
-    max-height: 400px;
-    aspect-ratio: 1 / 1;
+    width: auto; 
+    height: calc(100vh - 120px); /* Expand vertically */
+    flex: 1.5; /* Take up more horizontal space */
     margin: 0;
   }
 
-  /* Reposition and reformat the details */
-  .analog-details-container {
-    margin-top: 0;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+  .analog-details-container { margin-top: 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .analog-digital { font-size: clamp(2rem, 5vw, 3.5rem); } /* Dynamic sizing for the text */
 
-  .analog-digital {
-    font-size: 2rem; /* Larger and more prominent digital time */
-  }
+  /* Reposition Controls to Sidebar */
+  .controls { flex-direction: column; width: 140px; margin-bottom: 0; height: auto; gap: 15px; padding-left: 15px; border-left: 1px solid var(--border); justify-content: center;}
+  .btn-start { width: 100px; height: 100px; font-size: 1.2rem; }
+  .side-buttons { gap: 10px; }
 }
 </style>
 </head>
@@ -192,95 +209,104 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
   </div>
 </header>
 
-<div class="display-area">
-  
-  <div id="setup-view" class="panel-view">
+<div class="main-layout">
+  <div class="display-area">
     
-    <div class="setup-group" style="text-align: center;">
-      <label>Match Duration</label>
-      <div class="time-picker-wrapper">
-        <div class="time-col">
-            <button class="picker-btn" onmousedown="startAdjust('h', 1, event)" ontouchstart="startAdjust('h', 1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9650;</button>
-            <div class="picker-val" id="val-hrs">1</div>
-            <button class="picker-btn" onmousedown="startAdjust('h', -1, event)" ontouchstart="startAdjust('h', -1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9660;</button>
-            <span>HOURS</span>
-        </div>
+    <div id="setup-view" class="panel-view">
+      <div class="setup-grid">
         
-        <div class="time-colon">:</div>
-        
-        <div class="time-col">
-            <button class="picker-btn" onmousedown="startAdjust('m', 1, event)" ontouchstart="startAdjust('m', 1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9650;</button>
-            <div class="picker-val" id="val-mins">45</div>
-            <button class="picker-btn" onmousedown="startAdjust('m', -1, event)" ontouchstart="startAdjust('m', -1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9660;</button>
-            <span>MINUTES</span>
+        <div class="setup-group duration-group" style="text-align: center;">
+          <label>Match Duration</label>
+          <div class="time-picker-wrapper">
+            <div class="time-col">
+                <button class="picker-btn" onmousedown="startAdjust('h', 1, event)" ontouchstart="startAdjust('h', 1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9650;</button>
+                <div class="picker-val" id="val-hrs">1</div>
+                <button class="picker-btn" onmousedown="startAdjust('h', -1, event)" ontouchstart="startAdjust('h', -1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9660;</button>
+                <span>HOURS</span>
+            </div>
+            
+            <div class="time-colon">:</div>
+            
+            <div class="time-col">
+                <button class="picker-btn" onmousedown="startAdjust('m', 1, event)" ontouchstart="startAdjust('m', 1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9650;</button>
+                <div class="picker-val" id="val-mins">45</div>
+                <button class="picker-btn" onmousedown="startAdjust('m', -1, event)" ontouchstart="startAdjust('m', -1, event)" onmouseup="stopAdjust()" onmouseleave="stopAdjust()" ontouchend="stopAdjust()">&#9660;</button>
+                <span>MINUTES</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-group policy-group">
+          <label>End-of-Game Policy</label>
+          <select id="policy" class="app-select">
+            <option value="finish">Finish current end, then stop</option>
+            <option value="plus-one">Finish current + one additional end</option>
+          </select>
+        </div>
+
+        <div class="setup-group alert-group">
+          <label>Timer Expiration Alert</label>
+          <select id="alert-mode" class="app-select">
+            <option value="both">Buzzer & Scrolling Rock</option>
+            <option value="buzzer">Buzzer Only</option>
+            <option value="visual">Scrolling Rock Only</option>
+          </select>
+        </div>
+
+        <div class="setup-group btn-group" style="margin-bottom: 0;">
+          <button class="btn-wide" style="margin-top: 5px;" onclick="startSetup()">Set Timer</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="active-view" class="panel-view hidden">
+      
+      <div id="digital-view">
+        <div class="time-display" id="time-display">01:45:00</div>
+        <div class="time-label">Time Remaining</div>
+      </div>
+
+      <div id="analog-view">
+        <div class="watch-container">
+          <canvas id="watch-canvas"></canvas>
+        </div>
+        <div class="analog-details-container">
+            <div class="analog-digital" id="analog-digital">01:45:00</div>
+            <div class="time-label" style="margin-top:4px">Time Remaining</div>
         </div>
       </div>
+      
+      <div id="outcome-alert" class="outcome-alert hidden"></div>
     </div>
 
-    <div class="setup-group">
-      <label>End-of-Game Policy</label>
-      <select id="policy" class="app-select">
-        <option value="finish">Finish current end, then stop</option>
-        <option value="plus-one">Finish current + one additional end</option>
-      </select>
-    </div>
-
-    <div class="setup-group">
-      <label>Timer Expiration Alert</label>
-      <select id="alert-mode" class="app-select">
-        <option value="both">Buzzer & Scrolling Rock</option>
-        <option value="buzzer">Buzzer Only</option>
-        <option value="visual">Scrolling Rock Only</option>
-      </select>
-    </div>
-
-    <button class="btn-wide" onclick="startSetup()">Set Timer</button>
   </div>
 
-  <div id="active-view" class="panel-view hidden">
-    
-    <div id="digital-view">
-      <div class="time-display" id="time-display">01:45:00</div>
-      <div class="time-label">Time Remaining</div>
+  <div id="controls-area" class="controls hidden">
+    <div class="side-buttons">
+      <button class="btn-reset" onclick="goHome()" title="Return to Setup">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </button>
     </div>
 
-    <div id="analog-view">
-      <div class="watch-container">
-        <canvas id="watch-canvas"></canvas>
-      </div>
-      <div class="analog-details-container"> <div class="analog-digital" id="analog-digital">01:45:00</div>
-          <div class="time-label" style="margin-top:4px">Time Remaining</div>
-      </div>
-    </div>
-    
-    <div id="outcome-alert" class="outcome-alert hidden"></div>
-  </div>
-
-</div>
-
-<div id="controls-area" class="controls hidden">
-  <div class="side-buttons">
-    <button class="btn-reset" onclick="resetTimerOnly()" title="Reset Match Clock">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-        <path d="M3 3v5h5"/>
-      </svg>
+    <button class="btn-start" id="btn-start" onclick="toggleTimer()">
+      <div class="btn-start-icon" id="start-icon">▶</div>
+      <div id="start-label">START</div>
     </button>
+
+    <div class="side-buttons">
+      <button class="btn-reset" onclick="resetTimerOnly()" title="Reset Match Clock">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
-  <button class="btn-start" id="btn-start" onclick="toggleTimer()">
-    <div class="btn-start-icon" id="start-icon">▶</div>
-    <div id="start-label">START</div>
-  </button>
-
-  <div class="side-buttons">
-    <button class="btn-reset" onclick="goHome()" title="Return to Setup">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-      </svg>
-    </button>
-  </div>
 </div>
 
 <div id="scrolling-rock" class="rock-scroller">&#x1F94C;</div>
@@ -681,12 +707,21 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     if (currentView !== 'analog') return;
     const container = canvas.parentElement;
     
-    // Check both dimensions to ensure the dial is perfectly square and centered
-    canvasSize = Math.min(container.offsetWidth, container.offsetHeight); 
-    if (canvasSize <= 0) canvasSize = container.offsetWidth; // Fallback
+    // Explicitly calculate bounds using bounding client rect to ignore CSS stretching
+    const rect = container.getBoundingClientRect();
+    
+    // Force perfect square based on the smallest available dimension
+    canvasSize = Math.min(rect.width, rect.height); 
+    if (canvasSize <= 0) canvasSize = 280; // Safety Fallback
 
+    // Set high-res internal canvas dimensions
     canvas.width = canvasSize * window.devicePixelRatio;
     canvas.height = canvasSize * window.devicePixelRatio;
+    
+    // Explicitly lock the CSS dimensions so flexbox cannot warp it
+    canvas.style.width = canvasSize + 'px';
+    canvas.style.height = canvasSize + 'px';
+    
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   }
 
@@ -722,7 +757,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     }
 
     const total = configuredSeconds > 0 ? configuredSeconds : 1; 
-    ctx.font = `bold ${S*0.055}px -apple-system, 'SF Pro Display', sans-serif`;
+    ctx.font = `bold ${S*0.055}px -apple-system, sans-serif`;
     ctx.fillStyle = 'rgba(138,171,184,0.9)';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     
@@ -760,7 +795,12 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
   }
 
   // Re-size and re-draw whenever the screen changes orientation or size
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+    drawAnalog(totalSeconds);
+  });
+  
+  // Initial draw
   drawAnalog(configuredSeconds);
 </script>
 </body>
