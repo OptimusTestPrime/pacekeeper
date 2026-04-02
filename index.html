@@ -314,6 +314,35 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 </div>
 
 <script>
+  // WAKE LOCK LOGIC
+  let wakeLock = null;
+
+  async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+      } catch (err) {
+        console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
+      }
+    }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock !== null) {
+      wakeLock.release().then(() => {
+        wakeLock = null;
+      });
+    }
+  }
+
+  // Re-acquire wake lock if the user tabs away and comes back
+  document.addEventListener('visibilitychange', async () => {
+    if (wakeLock !== null && document.visibilityState === 'visible' && running) {
+      requestWakeLock();
+    }
+  });
+
+
   // VIEW TOGGLE LOGIC
   let currentView = 'digital';
   function setView(v) {
@@ -368,6 +397,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
   let beepInterval; 
   let configuredSeconds = (selHrs * 3600) + (selMins * 60); 
   let totalSeconds = configuredSeconds;
+  let targetEndTime = 0; // The exact timestamp when the timer should hit zero
   let running = false;
   let audioCtx;
 
@@ -436,6 +466,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     rockScroller.classList.remove('active');
     
     running = false;
+    releaseWakeLock();
     btnStart.classList.remove('running');
     startIcon.textContent = '▶';
     startLabel.textContent = 'START';
@@ -450,12 +481,17 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 
     if (!running) {
       if (totalSeconds <= 0) {
-        // Acknowledge the alarm if "DONE" is clicked
         clearInterval(beepInterval);
         rockScroller.classList.remove('active');
         return; 
       } 
       running = true;
+      
+      // Calculate exactly when in the future this timer should end
+      targetEndTime = Date.now() + (totalSeconds * 1000);
+      
+      requestWakeLock(); // Keep the screen on!
+      
       btnStart.classList.add('running');
       startIcon.innerHTML = '&#10074;&#10074;';
       startLabel.textContent = 'PAUSE';
@@ -464,11 +500,14 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
       rockScroller.classList.remove('active'); 
       clearInterval(beepInterval);
 
-      timerInterval = setInterval(tick, 1000);
+      // Check the time more frequently so the UI doesn't jump
+      timerInterval = setInterval(tick, 500);
       drawAnalog(totalSeconds); 
     } else {
       running = false;
       clearInterval(timerInterval);
+      releaseWakeLock(); // Let the screen sleep again
+      
       btnStart.classList.remove('running');
       startIcon.textContent = '▶';
       startLabel.textContent = 'RESUME';
@@ -478,11 +517,15 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
   }
 
   function tick() {
-    totalSeconds--;
+    const now = Date.now();
+    // Calculate the difference between the target end time and exactly right now
+    totalSeconds = Math.max(0, Math.round((targetEndTime - now) / 1000));
+
     if (totalSeconds <= 0) {
       totalSeconds = 0;
       running = false;
       clearInterval(timerInterval);
+      releaseWakeLock(); // Release the screen lock when done
       updateDisplays(0);
       triggerExpiration();
     } else {
@@ -529,6 +572,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     running = false;
     clearInterval(timerInterval);
     clearInterval(beepInterval);
+    releaseWakeLock();
     
     rockScroller.classList.remove('active');
     outcomeAlert.classList.add('hidden');
@@ -547,6 +591,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     running = false;
     clearInterval(timerInterval);
     clearInterval(beepInterval); 
+    releaseWakeLock();
     
     rockScroller.classList.remove('active');
     outcomeAlert.classList.add('hidden');
