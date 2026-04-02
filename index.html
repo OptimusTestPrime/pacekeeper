@@ -71,12 +71,13 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 .time-display.expired{color:var(--red);}
 .time-label{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:12px;letter-spacing:3px;color:#8aabb8;text-transform:uppercase;margin-top:12px;}
 
-/* ACTIVE TIMER STYLES - ANALOG */
-#analog-view{display:none;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;}
+/* ACTIVE TIMER STYLES - ANALOG - DEFAULT (PORTRAIT) */
+#analog-view{display:none;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center; width: 100%;}
 #analog-view.visible{display:-webkit-flex;display:flex;}
 .watch-container{position:relative;width:min(280px,70vw);height:min(280px,70vw);margin:0 auto;}
 #watch-canvas{width:100%;height:100%;border-radius:50%;}
-.analog-digital{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:1.6rem;font-weight:700;color:#8aabb8;text-align:center;margin-top:14px;letter-spacing:0.08em;}
+.analog-details-container { text-align: center; margin-top: 14px; }
+.analog-digital{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:1.6rem;font-weight:700;color:#8aabb8;letter-spacing:0.08em;}
 
 /* MAIN CONTROLS */
 .controls{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:20px;margin-bottom:24px;}
@@ -111,6 +112,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 .help-h3{font-family:'Barlow Condensed',Arial,sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8aabb8;margin:20px 0 8px;}
 .help-h3:first-of-type{margin-top:0;}
 .modal-box p{font-size:14px;color:#c5dde8;line-height:1.65;margin-bottom:10px;}
+.modal-box p.help-subline{font-size:11px; color:#5bb8f5;}
 .modal-btns{display:-webkit-flex;display:flex;-webkit-justify-content:flex-end;justify-content:flex-end;margin-top:22px;}
 .help-divider{height:1px;background:rgba(255,255,255,0.08);margin:18px 0;}
 .help-link{color:#5bb8f5;text-decoration:none;font-weight:600;}
@@ -118,6 +120,43 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 .help-promo-icon{font-size:28px;-webkit-flex-shrink:0;flex-shrink:0;}
 .help-promo-text{font-size:13px;color:#c5dde8;line-height:1.5;}
 .help-promo-text strong{font-family:'Barlow Condensed',Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#e8f4f8;display:block;margin-bottom:2px;}
+
+/* LANDSCAPE SPECIFIC STYLES */
+@media (orientation: landscape) {
+  .app { max-width: none; padding-bottom: 20px; } /* Remove width constraint and reduce bottom padding */
+  header { padding-bottom: 8px; margin-bottom: 12px; } /* Slim down header */
+  .display-area { margin-bottom: 0; }
+  .panel-view { padding: 15px; }
+
+  /* Redefine Analog View for Landscape */
+  #analog-view {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* Make the clock fill vertical space and cap it */
+  .watch-container {
+    width: auto;
+    height: calc(100vh - 120px); /* Approximate: viewport height minus header and controls */
+    max-height: 400px;
+    aspect-ratio: 1 / 1;
+    margin: 0;
+  }
+
+  /* Reposition and reformat the details */
+  .analog-details-container {
+    margin-top: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .analog-digital {
+    font-size: 2rem; /* Larger and more prominent digital time */
+  }
+}
 </style>
 </head>
 <body>
@@ -209,8 +248,9 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
       <div class="watch-container">
         <canvas id="watch-canvas"></canvas>
       </div>
-      <div class="analog-digital" id="analog-digital">01:45:00</div>
-      <div class="time-label" style="margin-top:4px">Time Remaining</div>
+      <div class="analog-details-container"> <div class="analog-digital" id="analog-digital">01:45:00</div>
+          <div class="time-label" style="margin-top:4px">Time Remaining</div>
+      </div>
     </div>
     
     <div id="outcome-alert" class="outcome-alert hidden"></div>
@@ -251,6 +291,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 
     <p class="help-h3">What is PaceKeeper?</p>
     <p>PaceKeeper is a free curling game monitor. Mount it behind the glass to keep club games on schedule, and ensure everyone knows the rule when the buzzer sounds.</p>
+    <p class="help-subline">Version 1.0.1</p>
 
     <div class="help-divider"></div>
 
@@ -259,11 +300,18 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     <p><strong style="color:#e8f4f8;">2. Set the Policy</strong> &mdash; Lock in the club's rule for when the timer hits zero (e.g., finish the current end, or play one more).</p>
     <p><strong style="color:#e8f4f8;">3. Start the Clock</strong> &mdash; Tap 'Set Timer', then hit the large Start button when the first rock is thrown.</p>
     <p><strong style="color:#e8f4f8;">4. Manage Time</strong> &mdash; Pause for timeouts or injuries. Use the left reset button to restart the clock, or the right home button to return to setup.</p>
+    <p><strong style="color:#e8f4f8;">5. Alarm Dismissal</strong> &mdash; When the timer hits zero, the main button turns into a large "DONE" button. Clicking this immediately silences the buzzer and hides the visual animation.</p>
 
     <div class="help-divider"></div>
 
     <p class="help-h3">Display Modes</p>
     <p>Toggle between <strong style="color:#e8f4f8;">Digital</strong> and <strong style="color:#e8f4f8;">Analog</strong> views using the icons in the top right. The Analog view acts as a dynamic visual pie-chart, making it easy for skips to estimate remaining time from across the sheet.</p>
+    <p>PaceKeeper has full support for both portrait and landscape orientations.</p>
+
+    <div class="help-divider"></div>
+
+    <p class="help-h3">Keep the Screen On</p>
+    <p>PaceKeeper uses modern browser features (Wake Lock API) to explicitly request that your device does not turn off the screen while a match is in progress.</p>
 
     <div class="help-divider"></div>
 
@@ -351,6 +399,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     document.getElementById('analog-view').classList.toggle('visible', v === 'analog');
     document.getElementById('btn-digital').classList.toggle('active', v === 'digital');
     document.getElementById('btn-analog').classList.toggle('active', v === 'analog');
+    // Ensure canvas is resized correctly whenever switching to it
     if (v === 'analog') { resizeCanvas(); drawAnalog(totalSeconds); }
   }
 
@@ -372,6 +421,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
         if (selMins < 0) selMins = 59;
         document.getElementById('val-mins').textContent = selMins.toString().padStart(2, '0');
     }
+    // Update the base configured time so the analog preview updates in real-time
     configuredSeconds = (selHrs * 3600) + (selMins * 60);
     if (!running) totalSeconds = configuredSeconds; 
     drawAnalog(totalSeconds); 
@@ -380,6 +430,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
   function startAdjust(type, delta, e) {
     if (e && e.cancelable) e.preventDefault(); 
     adjTime(type, delta); 
+    
     adjustTimeout = setTimeout(() => {
         adjustInterval = setInterval(() => {
             adjTime(type, delta);
@@ -481,6 +532,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 
     if (!running) {
       if (totalSeconds <= 0) {
+        // Silences alarm when DONE button clicked
         clearInterval(beepInterval);
         rockScroller.classList.remove('active');
         return; 
@@ -490,7 +542,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
       // Calculate exactly when in the future this timer should end
       targetEndTime = Date.now() + (totalSeconds * 1000);
       
-      requestWakeLock(); // Keep the screen on!
+      requestWakeLock(); // Request Wake Lock!
       
       btnStart.classList.add('running');
       startIcon.innerHTML = '&#10074;&#10074;';
@@ -500,13 +552,13 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
       rockScroller.classList.remove('active'); 
       clearInterval(beepInterval);
 
-      // Check the time more frequently so the UI doesn't jump
+      // Check the time more frequently so the UI doesn't jump on wake
       timerInterval = setInterval(tick, 500);
       drawAnalog(totalSeconds); 
     } else {
       running = false;
       clearInterval(timerInterval);
-      releaseWakeLock(); // Let the screen sleep again
+      releaseWakeLock(); // Release lock when paused
       
       btnStart.classList.remove('running');
       startIcon.textContent = '▶';
@@ -518,14 +570,14 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
 
   function tick() {
     const now = Date.now();
-    // Calculate the difference between the target end time and exactly right now
+    // Use timestamp math to get exact seconds remaining
     totalSeconds = Math.max(0, Math.round((targetEndTime - now) / 1000));
 
     if (totalSeconds <= 0) {
       totalSeconds = 0;
       running = false;
       clearInterval(timerInterval);
-      releaseWakeLock(); // Release the screen lock when done
+      releaseWakeLock(); // Release lock when done
       updateDisplays(0);
       triggerExpiration();
     } else {
@@ -628,7 +680,11 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
   function resizeCanvas() {
     if (currentView !== 'analog') return;
     const container = canvas.parentElement;
-    canvasSize = container.offsetWidth;
+    
+    // Check both dimensions to ensure the dial is perfectly square and centered
+    canvasSize = Math.min(container.offsetWidth, container.offsetHeight); 
+    if (canvasSize <= 0) canvasSize = container.offsetWidth; // Fallback
+
     canvas.width = canvasSize * window.devicePixelRatio;
     canvas.height = canvasSize * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -703,6 +759,7 @@ select.app-select:focus { outline: none; border-color: var(--accent); }
     ctx.fillStyle = '#080e1a'; ctx.fill();
   }
 
+  // Re-size and re-draw whenever the screen changes orientation or size
   window.addEventListener('resize', resizeCanvas);
   drawAnalog(configuredSeconds);
 </script>
